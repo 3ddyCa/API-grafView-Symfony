@@ -1,25 +1,46 @@
 
 services:
 ###> doctrine/doctrine-bundle ###
-  database:
-    image: postgres:${POSTGRES_VERSION:-16}-alpine
+  api_GF:
+    image: symfony:latest
+    build: .
+    container_name: api-grafView
+    ports: 
+      - "8080"
+    depends_on:
+      db_GF:
+        condition: service_healthy
+  db_GF:
+    image: mysql:9.7.1
+    restart: always
+    ports:
+      - "3306"
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app}
-      # You should definitely change the password in production
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
-      POSTGRES_USER: ${POSTGRES_USER:-app}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER} 
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASWORD}
+      MYSQL_PASSWORD: ${MYSQL_ROOT_PASWORD}
+
     healthcheck:
-      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB:-app}", "-U", "${POSTGRES_USER:-app}"]
+      test: ["CMD", "mysqladmin", "ping", "-h","localhost", "-U", "m.meteo", "-p", "myD00B1E"]
       timeout: 5s
       retries: 5
       start_period: 60s
+    #build: 'exec -c "mysql -U m.meteo -P myD00B1E -S localhost -d meteoView -i ./db.sql"'
     volumes:
-      - database_data:/var/lib/postgresql/data:rw
+
       # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
-      # - ./docker/db/data:/var/lib/postgresql/data:rw
+      - ./db.sql:/docker-entrypoint-initdb.d/db.sql
+      - db_data:/var/lib/mysql/db_GF_data:rw
 ###< doctrine/doctrine-bundle ###
+    networks:
+      - viewGraf-network
+
 
 volumes:
 ###> doctrine/doctrine-bundle ###
-  database_data:
+  db_data:
 ###< doctrine/doctrine-bundle ###
+networks:
+  viewGraf-network:
+    driver: bridge

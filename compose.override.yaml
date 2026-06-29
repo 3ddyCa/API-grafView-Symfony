@@ -1,13 +1,16 @@
 
 services:
+  api_GF:
+    ports:
+      - "8080"
 ###> doctrine/doctrine-bundle ###
-  database:
+  db_GF:
     ports:
       - "5432"
 ###< doctrine/doctrine-bundle ###
 
 ###> symfony/mailer ###
-  mailer:
+  mailer_GF:
     image: axllent/mailpit
     ports:
       - "1025"
